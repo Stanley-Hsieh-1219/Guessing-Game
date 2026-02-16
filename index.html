@@ -266,7 +266,7 @@
                     { word: "遊覽車", hints: ["這個交通工具有3個字", "旅行團出遊常搭的", "大型巴士可坐好幾十人"] },
                     { word: "校車", hints: ["這個交通工具有2個字", "每天接送學生上下學", "通常是黃色的巴士"] },
                     { word: "貨車", hints: ["這個交通工具有2個字", "專門運送物品貨物", "後面有大大的載貨空間"] },
-                    { word: "腳踏車", hints: ["這個交通工具有3個字", "用腳踩踏板前進", "兩個輪子的環保工具"] },
+                    { word: "電動車", hints: ["這個交通工具有3個字", "不用加油用充電的", "特斯拉是最有名的品牌"] },
                     { word: "渡輪", hints: ["這個交通工具有2個字", "載人和車過河海峽", "旗津就是靠它來往"] },
                     { word: "油罐車", hints: ["這個交通工具有3個字", "運送液體燃料的大車", "圓柱形的車身很好認"] },
                     { word: "吉普車", hints: ["這個交通工具有3個字", "適合越野的車種", "軍隊常用的四輪驅動車"] },
@@ -523,7 +523,7 @@
         };
 
         // ===== 遊戲狀態 =====
-        const state = { screen: 'start', category: null, level: null, currentQuestions: [], questionIndex: 0, attempt: 1, score: 0, inputLocked: false, results: [] };
+        const state = { screen: 'start', category: null, level: null, currentQuestions: [], questionIndex: 0, attempt: 1, score: 0, inputLocked: false, results: [], usedExtraHint: false, usedFirstChar: false, extraHintText: '', firstCharText: '' };
 
         function shuffle(a) { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[b[i], b[j]] = [b[j], b[i]]; } return b; }
 
@@ -600,7 +600,7 @@
             <span class="text-orange-400 text-sm font-bold">第 ${state.questionIndex + 1} / ${state.currentQuestions.length} 題</span>
             <span class="text-orange-300 text-xs ml-2">（第 ${state.attempt} 次嘗試）</span>
         </div>
-        <div class="space-y-3 mb-5 px-1">
+        <div class="space-y-3 mb-4 px-1">
             ${q.hints.map((h, i) => {
                 const icons = ['💬', '🏠', '📏'], labels = ['提示一', '提示二', '提示三'];
                 return `<div class="hint-card flex items-start gap-3 bg-orange-50 rounded-xl p-3 border border-orange-100">
@@ -609,6 +609,21 @@
                     <div class="text-orange-800 text-sm font-medium">${h}</div></div>
                 </div>`;
             }).join('')}
+            ${state.extraHintText ? `<div class="hint-card flex items-start gap-3 bg-amber-50 rounded-xl p-3 border border-amber-200">
+                <span class="text-xl mt-0.5">🔍</span>
+                <div><div class="text-[10px] text-amber-500 font-bold tracking-widest">額外提示</div>
+                <div class="text-amber-700 text-sm font-medium">${state.extraHintText}</div></div>
+            </div>` : ''}
+            ${state.firstCharText ? `<div class="hint-card flex items-start gap-3 bg-emerald-50 rounded-xl p-3 border border-emerald-200">
+                <span class="text-xl mt-0.5">🔤</span>
+                <div><div class="text-[10px] text-emerald-500 font-bold tracking-widest">首字提示</div>
+                <div class="text-emerald-700 text-sm font-medium">${state.firstCharText}</div></div>
+            </div>` : ''}
+        </div>
+        <div class="flex gap-2 px-1 mb-3">
+            <button id="btn-extra-hint" class="flex-1 text-xs py-2 px-2 rounded-lg border-2 font-bold transition-all ${state.usedExtraHint ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-amber-50 text-amber-600 border-amber-300 hover:bg-amber-100 cursor-pointer'}" ${state.usedExtraHint || state.inputLocked ? 'disabled' : ''}>💡 再一個提示</button>
+            <button id="btn-first-char" class="flex-1 text-xs py-2 px-2 rounded-lg border-2 font-bold transition-all ${state.usedFirstChar ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-emerald-50 text-emerald-600 border-emerald-300 hover:bg-emerald-100 cursor-pointer'}" ${state.usedFirstChar || state.inputLocked ? 'disabled' : ''}>🔤 給我第一個字</button>
+            <button id="btn-give-up" class="flex-1 text-xs py-2 px-2 rounded-lg border-2 font-bold transition-all ${state.inputLocked ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-red-50 text-red-500 border-red-300 hover:bg-red-100 cursor-pointer'}" ${state.inputLocked ? 'disabled' : ''}>🏳️ 放棄</button>
         </div>
         <div class="flex gap-2 px-1">
             <input id="answer-input" type="text" placeholder="輸入你的答案…"
@@ -665,6 +680,9 @@
             document.getElementById('submit-btn')?.addEventListener('click', submitAnswer);
             const inp = document.getElementById('answer-input');
             if (inp) { inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !state.inputLocked) submitAnswer(); }); if (!state.inputLocked) setTimeout(() => inp.focus(), 100); }
+            document.getElementById('btn-extra-hint')?.addEventListener('click', useExtraHint);
+            document.getElementById('btn-first-char')?.addEventListener('click', useFirstChar);
+            document.getElementById('btn-give-up')?.addEventListener('click', useGiveUp);
             document.getElementById('retry-btn')?.addEventListener('click', () => startGame(state.level));
             document.getElementById('menu-btn')?.addEventListener('click', () => { state.screen = 'start'; render(); });
         }
@@ -673,6 +691,7 @@
             state.level = level;
             state.currentQuestions = shuffle(questions[state.category][level]).slice(0, 10);
             state.questionIndex = 0; state.attempt = 1; state.score = 0; state.inputLocked = false; state.results = [];
+            state.usedExtraHint = false; state.usedFirstChar = false; state.extraHintText = ''; state.firstCharText = '';
             state.screen = 'play'; render();
         }
 
@@ -694,8 +713,34 @@
 
         function nextQuestion() {
             state.questionIndex++; state.attempt = 1; state.inputLocked = false;
+            state.usedExtraHint = false; state.usedFirstChar = false; state.extraHintText = ''; state.firstCharText = '';
             state.screen = state.questionIndex >= state.currentQuestions.length ? 'result' : 'play';
             render();
+        }
+
+        function useExtraHint() {
+            if (state.usedExtraHint || state.inputLocked) return;
+            const q = state.currentQuestions[state.questionIndex];
+            const lastChar = q.word[q.word.length - 1];
+            state.usedExtraHint = true;
+            state.extraHintText = `答案的最後一個字是「${lastChar}」`;
+            render();
+        }
+
+        function useFirstChar() {
+            if (state.usedFirstChar || state.inputLocked) return;
+            const q = state.currentQuestions[state.questionIndex];
+            const firstChar = q.word[0];
+            state.usedFirstChar = true;
+            state.firstCharText = `答案的第一個字是「${firstChar}」`;
+            render();
+        }
+
+        function useGiveUp() {
+            if (state.inputLocked) return;
+            const q = state.currentQuestions[state.questionIndex];
+            state.results.push({ word: q.word, correct: false, points: 0 });
+            showFeedback(false, () => nextQuestion());
         }
 
         function showFeedback(correct, cb) {
