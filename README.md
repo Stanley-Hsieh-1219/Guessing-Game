@@ -10,7 +10,7 @@
 
 - **5 種挑戰類別**：🍽️ 美食 ｜ 🚗 交通工具 ｜ 🦁 陸地動物 ｜ 🐳 海洋動物 ｜ 🏙️ 世界知名城市
 - **3 種難度等級**：🥄 新手 ｜ 🍳 資深 ｜ ⭐ 大師
-- **300 題題庫**：每個類別 × 難度各 20 題
+- **750 題題庫**：每個類別 × 難度各 50 題
 - **每回合 10 題**：從題庫隨機抽選
 - **2 次作答機會**：首次答對 +10 分，第二次 +5 分
 
@@ -36,8 +36,9 @@
 
 ## 🛠️ 技術
 
-- 單一 `index.html` 檔案，無需後端
+- 純前端，無需後端
 - Vanilla JavaScript + Tailwind CSS CDN
+- 題庫模組化：5 個獨立資料檔（`data-food.js`、`data-transport.js`、`data-land.js`、`data-sea.js`、`data-city.js`）
 - 純前端狀態機架構（Start → Category → Difficulty → Play → Result）
 
 ## 📄 授權
