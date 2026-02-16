@@ -13,6 +13,7 @@
 - **750 題題庫**：每個類別 × 難度各 50 題
 - **每回合 10 題**：從題庫隨機抽選
 - **2 次作答機會**：首次答對 +10 分，第二次 +5 分
+- **🏆 即時排行榜**：挑戰結束後可輸入姓名，記錄分數並查看前 10 名高手
 
 ## 🆕 輔助功能按鈕
 
@@ -33,13 +34,16 @@
 3. 選擇難度等級（新手 / 資深 / 大師）
 4. 根據三條提示輸入答案，可使用輔助按鈕獲得更多線索
 5. 完成 10 題挑戰，查看最終分數與答題紀錄
+6. 輸入姓名，將成績寫入 Google Sheets 並與全球玩家競爭排名
 
 ## 🛠️ 技術
 
 - 純前端，無需後端
 - Vanilla JavaScript + Tailwind CSS CDN
 - 題庫模組化：5 個獨立資料檔（`data-food.js`、`data-transport.js`、`data-land.js`、`data-sea.js`、`data-city.js`）
+- 題庫模組化：5 個獨立資料檔（`data-food.js`、`data-transport.js`、`data-land.js`、`data-sea.js`、`data-city.js`）
 - 純前端狀態機架構（Start → Category → Difficulty → Play → Result）
+- **後端整合**：Google Apps Script + Google Sheets (作為資料庫與 API)
 
 ## 📄 授權
 
