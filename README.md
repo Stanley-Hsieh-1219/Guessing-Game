@@ -13,7 +13,9 @@
 - **750 題題庫**：每個類別 × 難度各 50 題
 - **每回合 10 題**：從題庫隨機抽選
 - **2 次作答機會**：首次答對 +10 分，第二次 +5 分
-- **🏆 即時排行榜**：挑戰結束後可輸入姓名，記錄分數並查看前 10 名高手
+- **🏆 即時排行榜**：
+  - **賽前查閱**：在選擇難度時，可提前查閱目前各難度前 10 名的高手成績。
+  - **賽後記錄**：挑戰結束後可輸入姓名，記錄分數與全球玩家競爭排名（內建防連點機制，避免重複送出）。
 
 ## 🆕 輔助功能按鈕
 
@@ -31,19 +33,18 @@
 
 1. 點擊「開始遊戲」
 2. 選擇挑戰類別（美食 / 交通工具 / 陸地動物 / 海洋動物 / 世界知名城市）
-3. 選擇難度等級（新手 / 資深 / 大師）
-4. 根據三條提示輸入答案，可使用輔助按鈕獲得更多線索
-5. 完成 10 題挑戰，查看最終分數與答題紀錄
-6. 輸入姓名，將成績寫入 Google Sheets 並與全球玩家競爭排名
+3. 選擇難度等級（新手 / 資深 / 大師），或點擊「🏆 查閱排行榜」觀看目前成績。
+4. 根據三條提示輸入答案，可使用輔助按鈕獲得更多線索。
+5. 完成 10 題挑戰，查看最終分數與答題紀錄。
+6. 輸入姓名，將成績寫入排行榜，與全球玩家一較高下！
 
 ## 🛠️ 技術
 
 - 純前端，無需後端
 - Vanilla JavaScript + Tailwind CSS CDN
 - 題庫模組化：5 個獨立資料檔（`data-food.js`、`data-transport.js`、`data-land.js`、`data-sea.js`、`data-city.js`）
-- 題庫模組化：5 個獨立資料檔（`data-food.js`、`data-transport.js`、`data-land.js`、`data-sea.js`、`data-city.js`）
-- 純前端狀態機架構（Start → Category → Difficulty → Play → Result）
-- **後端整合**：Google Apps Script + Google Sheets (作為資料庫與 API)
+- 純前端狀態機架構（Start → Category → Difficulty → Leaderboard View → Play → Result）
+- **後端整合**：Google Apps Script + Google Sheets (作為資料庫排行榜 API)
 
 ## 📄 授權
 

@@ -199,7 +199,7 @@
         const LEADERBOARD_API = 'https://script.google.com/macros/s/AKfycbzBP8R0paYZg6Sa5RX2aG5d3QqVPfeJP9m559QSGTFog8oz8l3fR959R6Z4oL1UkWg/exec';
 
         // ===== 遊戲狀態 =====
-        const state = { screen: 'start', category: null, level: null, currentQuestions: [], questionIndex: 0, attempt: 1, score: 0, inputLocked: false, results: [], usedExtraHint: false, usedFirstChar: false, extraHintText: '', firstCharText: '', leaderboard: [], leaderboardLoading: false, leaderboardFetched: false, scoreSubmitted: false };
+        const state = { screen: 'start', category: null, level: null, currentQuestions: [], questionIndex: 0, attempt: 1, score: 0, inputLocked: false, results: [], usedExtraHint: false, usedFirstChar: false, extraHintText: '', firstCharText: '', leaderboard: [], leaderboardLoading: false, leaderboardFetched: false, scoreSubmitted: false, isSubmitting: false, viewLeaderboardData: [], viewLeaderboardLoading: false, viewLeaderboardDiff: 'easy' };
 
         function shuffle(a) { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[b[i], b[j]] = [b[j], b[i]]; } return b; }
 
@@ -209,6 +209,7 @@
                 case 'start': app.innerHTML = renderStart(); break;
                 case 'category': app.innerHTML = renderCategory(); break;
                 case 'difficulty': app.innerHTML = renderDifficulty(); break;
+                case 'leaderboard_view': app.innerHTML = renderLeaderboardView(); break;
                 case 'play': app.innerHTML = renderPlay(); break;
                 case 'result': app.innerHTML = renderResult(); break;
             }
@@ -253,9 +254,50 @@
                 <div class="font-black text-lg">${v.label}</div>
                 <div class="text-white/80 text-xs">${v.desc}</div>
             </button>`).join('')}
+            
+            <button id="btn-view-leaderboard" class="sel-btn w-full bg-white border-2 border-orange-300 text-orange-600 rounded-2xl p-4 text-center shadow-lg cursor-pointer flex items-center justify-center gap-2 mt-4">
+                <span class="text-xl">🏆</span>
+                <span class="font-black text-lg">查閱排行榜</span>
+            </button>
         </div>
         <button id="back-cat" class="mt-4 text-orange-400 text-sm underline cursor-pointer hover:text-orange-600">← 返回選擇類別</button>
     </div>`;
+        }
+
+        function renderLeaderboardView() {
+            const cat = categories[state.category];
+            const diffs = Object.entries(difficulties);
+            return `<div class="card-float text-center py-6">
+        <h2 class="text-2xl font-black text-orange-800 mb-1">${cat.label} 排行榜</h2>
+        
+        <div class="flex justify-center gap-2 mt-4 mb-4 px-4">
+            ${diffs.map(([k, v]) => `
+            <button data-lb-diff="${k}" class="flex-1 py-2 rounded-xl text-sm font-bold transition-all ${state.viewLeaderboardDiff === k ? 'bg-gradient-to-br ' + v.color.split(' ')[0] + ' ' + v.color.split(' ')[1] + ' text-white shadow-md' : 'bg-orange-50 text-orange-600 border border-orange-200 cursor-pointer hover:bg-orange-100'}">
+                ${v.label}
+            </button>`).join('')}
+        </div>
+
+        <div class="text-left px-4 mb-6 min-h-[250px] max-h-[350px] overflow-y-auto">
+            ${state.viewLeaderboardLoading ? `<div class="text-center py-8 text-orange-400"><span class="inline-block animate-spin mr-2 text-2xl">⏳</span><br>載入中...</div>` :
+                    state.viewLeaderboardData.length === 0 ? `<div class="text-center py-8 text-orange-300">尚無紀錄，成為第一位挑戰者吧！</div>` : `
+            <div class="space-y-2">
+                ${state.viewLeaderboardData.map(entry => {
+                        let icon, rowClass;
+                        if (entry.rank === 1) { icon = '<span class="text-xl" style="filter:drop-shadow(0 1px 2px rgba(234,179,8,.5))">🏆</span>'; rowClass = 'bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200'; }
+                        else if (entry.rank === 2) { icon = '<span class="text-xl" style="filter:drop-shadow(0 1px 2px rgba(156,163,175,.5))">🥈</span>'; rowClass = 'bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200'; }
+                        else if (entry.rank === 3) { icon = '<span class="text-xl" style="filter:drop-shadow(0 1px 2px rgba(180,83,9,.4))">🥉</span>'; rowClass = 'bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200'; }
+                        else { icon = '<span class="text-base font-black text-orange-400 w-7 inline-block text-center">' + entry.rank + '</span>'; rowClass = 'bg-orange-50'; }
+                        return `<div class="flex items-center gap-3 text-base ${rowClass} rounded-xl px-4 py-3 shadow-sm">
+                        <span class="w-8 text-center">${icon}</span>
+                        <span class="flex-1 text-orange-800 font-bold truncate">${entry.name}</span>
+                        <span class="font-black text-orange-600">${entry.score} 分</span>
+                    </div>`;
+                    }).join('')}
+            </div>`}
+        </div >
+
+                        <button id="back-diff" class="text-orange-500 font-bold underline cursor-pointer hover:text-orange-700">← 返回選擇難度等級</button>
+    </div > `;
         }
 
         function renderPlay() {
@@ -263,7 +305,7 @@
             const cat = categories[state.category];
             const diff = difficulties[state.level];
             const progress = (state.questionIndex / state.currentQuestions.length) * 100;
-            return `<div class="card-float">
+            return `< div class= "card-float" >
         <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
             <span class="text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-br ${cat.color} text-white shadow">${cat.label}</span>
             <span class="text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-br ${diff.color} text-white shadow">${diff.label}</span>
@@ -308,7 +350,7 @@
             <button id="submit-btn" class="px-5 py-3 bg-gradient-to-br ${cat.color} text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 ${state.inputLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}"
                 ${state.inputLocked ? 'disabled' : ''}>送出</button>
         </div>
-    </div>`;
+    </div > `;
         }
 
         function renderResult() {
@@ -321,7 +363,7 @@
             else if (pct >= 50) { rE = '😋'; rT = '不錯喔！繼續加油！'; }
             else if (pct >= 30) { rE = '🤔'; rT = '再多學一些就知道了！'; }
             else { rE = '😅'; rT = '沒關係，學習的路還很長！'; }
-            return `<div class="card-float text-center py-6">
+            return `< div class= "card-float text-center py-6" >
         <div class="star-spin text-7xl mb-3">${rE}</div>
         <h2 class="text-2xl font-black text-orange-800 mb-1">遊戲結束！</h2>
         <p class="text-orange-600 text-sm mb-4">${cat.label} ‧ ${difficulties[state.level].label}</p>
@@ -342,7 +384,7 @@
                 </div>
             </div>`}
         </div>
-        <!-- 排行榜 -->
+        <!--排行榜 -->
         <div class="text-left px-4 mb-5">
             <p class="text-xs text-orange-400 font-bold mb-2">— 🏆 排行榜 TOP 10 —</p>
             ${state.leaderboardLoading ? `<div class="text-center py-4 text-orange-400 text-sm"><span class="inline-block animate-spin mr-1">⏳</span> 載入中...</div>` :
@@ -362,7 +404,7 @@
                     }).join('')}
             </div>`}
         </div>
-        <!-- 答題紀錄 -->
+        <!--答題紀錄 -->
         <div class="text-left px-4 mb-5">
             <p class="text-xs text-orange-400 font-bold mb-2">— 📋 答題紀錄 —</p>
             <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
@@ -378,7 +420,7 @@
             <button id="retry-btn" class="w-full bg-gradient-to-br ${cat.color} text-white font-bold rounded-xl py-3 shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer">🔄 再挑戰一次</button>
             <button id="menu-btn" class="w-full bg-white border-2 border-orange-300 text-orange-600 font-bold rounded-xl py-3 hover:bg-orange-50 transition-all active:scale-95 cursor-pointer">🏠 回到主選單</button>
         </div>
-    </div>`;
+    </div > `;
         }
 
         function bindEvents() {
@@ -386,6 +428,10 @@
             document.querySelectorAll('[data-cat]').forEach(b => b.addEventListener('click', () => { state.category = b.dataset.cat; state.screen = 'difficulty'; render(); }));
             document.querySelectorAll('[data-diff]').forEach(b => b.addEventListener('click', () => { startGame(b.dataset.diff); }));
             document.getElementById('back-cat')?.addEventListener('click', () => { state.screen = 'category'; render(); });
+
+            document.getElementById('btn-view-leaderboard')?.addEventListener('click', () => { state.screen = 'leaderboard_view'; state.viewLeaderboardData = []; render(); fetchLeaderboardView(); });
+            document.querySelectorAll('[data-lb-diff]').forEach(b => b.addEventListener('click', () => { if (state.viewLeaderboardDiff !== b.dataset.lbDiff) { state.viewLeaderboardDiff = b.dataset.lbDiff; state.viewLeaderboardData = []; render(); fetchLeaderboardView(); } }));
+            document.getElementById('back-diff')?.addEventListener('click', () => { state.screen = 'difficulty'; render(); });
             document.getElementById('submit-btn')?.addEventListener('click', submitAnswer);
             const inp = document.getElementById('answer-input');
             if (inp) { inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !state.inputLocked) submitAnswer(); }); if (!state.inputLocked) setTimeout(() => inp.focus(), 100); }
@@ -404,7 +450,7 @@
             state.currentQuestions = shuffle(questions[state.category][level]).slice(0, 10);
             state.questionIndex = 0; state.attempt = 1; state.score = 0; state.inputLocked = false; state.results = [];
             state.usedExtraHint = false; state.usedFirstChar = false; state.extraHintText = ''; state.firstCharText = '';
-            state.leaderboard = []; state.leaderboardLoading = false; state.leaderboardFetched = false; state.scoreSubmitted = false;
+            state.leaderboard = []; state.leaderboardLoading = false; state.leaderboardFetched = false; state.scoreSubmitted = false; state.isSubmitting = false;
             state.screen = 'play'; render();
         }
 
@@ -461,15 +507,28 @@
             if (correct) { const s = document.getElementById('score-display'); if (s) s.classList.add('score-bounce'); }
             const ov = document.createElement('div');
             ov.className = 'feedback-overlay';
-            ov.innerHTML = `<div class="text-center">
+            ov.innerHTML = `< div class= "text-center" >
         <div class="text-[140px] sm:text-[180px] font-black leading-none select-none ${correct ? 'text-green-500' : 'text-red-500'}"
             style="text-shadow:0 0 60px ${correct ? 'rgba(34,197,94,.4)' : 'rgba(239,68,68,.4)'}">
             ${correct ? '⭕' : '❌'}</div>
         <div class="text-lg font-bold mt-2 ${correct ? 'text-green-600' : 'text-red-500'}">
             ${correct ? (state.attempt === 1 ? '太棒了！+10 分' : '答對了！+5 分') : '答錯了！'}</div>
-    </div>`;
+    </div > `;
             document.body.appendChild(ov);
             setTimeout(() => { ov.classList.add('fade-out'); setTimeout(() => { ov.remove(); cb(); }, 400); }, 1600);
+        }
+
+        async function fetchLeaderboardView() {
+            state.viewLeaderboardLoading = true;
+            render();
+            try {
+                const url = `${LEADERBOARD_API} ? category = ${state.category} & difficulty=${state.viewLeaderboardDiff}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.success) { state.viewLeaderboardData = data.leaderboard; }
+            } catch (err) { console.error('排行榜載入失敗:', err); }
+            state.viewLeaderboardLoading = false;
+            render();
         }
 
         // ===== 排行榜 API 函式 =====
@@ -479,7 +538,7 @@
             state.leaderboardLoading = true;
             render();
             try {
-                const url = `${LEADERBOARD_API}?category=${state.category}&difficulty=${state.level}`;
+                const url = `${LEADERBOARD_API} ? category = ${state.category} & difficulty=${state.level}`;
                 const res = await fetch(url);
                 const data = await res.json();
                 if (data.success) { state.leaderboard = data.leaderboard; }
@@ -489,12 +548,14 @@
         }
 
         async function submitScore() {
+            if (state.isSubmitting || state.scoreSubmitted) return;
             const nameInp = document.getElementById('name-input');
             const btn = document.getElementById('submit-score-btn');
             if (!nameInp) return;
             const name = nameInp.value.trim();
             if (!name) { nameInp.classList.add('border-red-400'); setTimeout(() => nameInp.classList.remove('border-red-400'), 600); return; }
             if (name.length > 20) { alert('姓名不可超過20個字元'); return; }
+            state.isSubmitting = true;
             // 禁用按鈕防止重複送出
             if (btn) { btn.disabled = true; btn.textContent = '送出中...'; }
             try {
@@ -508,11 +569,16 @@
                     state.scoreSubmitted = true;
                     state.leaderboard = data.leaderboard;
                     render();
-                } else { alert('送出失敗：' + (data.error || '未知錯誤')); if (btn) { btn.disabled = false; btn.textContent = '送出'; } }
+                } else {
+                    alert('送出失敗：' + (data.error || '未知錯誤'));
+                    if (btn) { btn.disabled = false; btn.textContent = '送出'; }
+                    state.isSubmitting = false;
+                }
             } catch (err) {
                 console.error('分數送出失敗:', err);
                 alert('送出失敗，請檢查網路連線');
                 if (btn) { btn.disabled = false; btn.textContent = '送出'; }
+                state.isSubmitting = false;
             }
         }
 
