@@ -522,7 +522,7 @@
             state.viewLeaderboardLoading = true;
             render();
             try {
-                const url = `${LEADERBOARD_API} ? category = ${state.category} & difficulty=${state.viewLeaderboardDiff}`;
+                const url = LEADERBOARD_API + '?category=' + state.category + '&difficulty=' + state.viewLeaderboardDiff;
                 const res = await fetch(url);
                 const data = await res.json();
                 if (data.success) { state.viewLeaderboardData = data.leaderboard; }
@@ -538,7 +538,7 @@
             state.leaderboardLoading = true;
             render();
             try {
-                const url = `${LEADERBOARD_API} ? category = ${state.category} & difficulty=${state.level}`;
+                const url = LEADERBOARD_API + '?category=' + state.category + '&difficulty=' + state.level;
                 const res = await fetch(url);
                 const data = await res.json();
                 if (data.success) { state.leaderboard = data.leaderboard; }
