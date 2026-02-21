@@ -305,7 +305,7 @@
             const cat = categories[state.category];
             const diff = difficulties[state.level];
             const progress = (state.questionIndex / state.currentQuestions.length) * 100;
-            return `< div class= "card-float" >
+            return `<div class="card-float">
         <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
             <span class="text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-br ${cat.color} text-white shadow">${cat.label}</span>
             <span class="text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-br ${diff.color} text-white shadow">${diff.label}</span>
@@ -363,7 +363,7 @@
             else if (pct >= 50) { rE = '😋'; rT = '不錯喔！繼續加油！'; }
             else if (pct >= 30) { rE = '🤔'; rT = '再多學一些就知道了！'; }
             else { rE = '😅'; rT = '沒關係，學習的路還很長！'; }
-            return `< div class= "card-float text-center py-6" >
+            return `<div class="card-float text-center py-6">
         <div class="star-spin text-7xl mb-3">${rE}</div>
         <h2 class="text-2xl font-black text-orange-800 mb-1">遊戲結束！</h2>
         <p class="text-orange-600 text-sm mb-4">${cat.label} ‧ ${difficulties[state.level].label}</p>
@@ -507,7 +507,7 @@
             if (correct) { const s = document.getElementById('score-display'); if (s) s.classList.add('score-bounce'); }
             const ov = document.createElement('div');
             ov.className = 'feedback-overlay';
-            ov.innerHTML = `< div class= "text-center" >
+            ov.innerHTML = `<div class="text-center">
         <div class="text-[140px] sm:text-[180px] font-black leading-none select-none ${correct ? 'text-green-500' : 'text-red-500'}"
             style="text-shadow:0 0 60px ${correct ? 'rgba(34,197,94,.4)' : 'rgba(239,68,68,.4)'}">
             ${correct ? '⭕' : '❌'}</div>
